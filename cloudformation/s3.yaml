@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "glue etl with amazon review dataset"
+  
+Parameters:
+  BucketNameInput:
+    Description: "S3 input bucket name for storing raw data"
+    Type: String
+    Default: ""
+  OutputBucketName:
+    Description: "S3 input bucket name for storing glue data"
+    Type: String
+    Default: ""
+ 
+  
+Resources:
+  s3BucketInput:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Ref BucketNameInput 
+  s3BucketOutput:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Ref OutputBucketName 
+  

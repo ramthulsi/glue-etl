@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "glue etl with amazon review dataset"
+  
+Parameters:
+  BucketNameInput:
+    Description: "S3 input bucket path where the raw data is stored eg: s3://{BUCKETNAME}/{FOLDER}"
+    Type: String
+    Default: ""
+  CrawlerName:
+    Description: "Name of the Glue Crawler"
+    Type: String
+    Default: ""  
+  DatabaseName:
+    Description: "S3 input bucket name for storing glue data"
+    Type: String
+    Default: ""
+  
+Resources:
+  # s3BucketInput:
+  #   Type: AWS::S3::Bucket
+  #   Properties: 
+  #     BucketName: !Ref BucketNameInput 
+  # s3BucketOutput:
+  #   Type: AWS::S3::Bucket
+  #   Properties: 
+  #     BucketName: !Ref OutputBucketName 
+  GlueCrawlerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "glue.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "*"
+                Resource: "*"
+  MyDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Ref DatabaseName
+        Description: "Name of the database to store the extracted schema"
+  MyGlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: !Ref CrawlerName
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref MyDatabase
+      Targets:
+        S3Targets:
+          - Path: !Ref BucketNameInput
+      SchemaChangePolicy:
+        UpdateBehavior: "UPDATE_IN_DATABASE"
+        DeleteBehavior: "LOG"
+
